@@ -12,7 +12,8 @@ dependencies = [
     "pandas (>=2.2.3,<3.0.0)",
     "typer[all] (>=0.15.2,<0.16.0)",
     "python-dotenv (>=1.0.1,<2.0.0)",
-    "beautifulsoup4 (>=4.13.3,<5.0.0)"
+    "beautifulsoup4 (>=4.13.3,<5.0.0)",
+    "biopython (>=1.85,<2.0)"
 ]
 
 [tool.poetry]
