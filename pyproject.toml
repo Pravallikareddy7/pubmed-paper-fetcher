@@ -1,0 +1,27 @@
+[project]
+name = "pubmed-paper-fetcher"
+version = "0.1.0"
+description = ""
+authors = [
+    {name = "Your Name",email = "you@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.9"
+dependencies = [
+    "requests (>=2.32.3,<3.0.0)",
+    "pandas (>=2.2.3,<3.0.0)",
+    "typer[all] (>=0.15.2,<0.16.0)",
+    "python-dotenv (>=1.0.1,<2.0.0)",
+    "beautifulsoup4 (>=4.13.3,<5.0.0)"
+]
+
+[tool.poetry]
+packages = [{include = "pubmed_paper_fetcher", from = "src"}]
+
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.3.5"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
