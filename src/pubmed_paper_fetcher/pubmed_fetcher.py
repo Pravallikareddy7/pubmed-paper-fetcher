@@ -1,32 +1,37 @@
-import argparse
-import requests
-import re
-import csv
 import os
+import time
+import csv
 from typing import List, Dict
 from Bio import Entrez, Medline
+import requests
+import re
 
-# Set your email (required by PubMed API)
-Entrez.email = "your_email@example.com"  # Replace with your email
 
-# Industry keywords for filtering
-INDUSTRY_KEYWORDS = [
-    "inc", "ltd", "pharma", "biotech", "corp", "gmbh", "company",
-    "pfizer", "moderna", "astrazeneca", "novartis", "roche",
-    "johnson & johnson", "sanofi", "merck", "bayer", "novo nordisk"
-]
+# Define academic keywords
+ACADEMIC_KEYWORDS = {"university", "college", "institute", "research center", "school", "academy", "hospital"}
 
-# Academic keywords to filter out
-ACADEMIC_KEYWORDS = ["university", "college", "hospital", "institute", "school", ".edu", "academy"]
+# Set Entrez email (required for API usage)
+Entrez.email = "slpravallika7@gmail.com"
+
+
+
+def validate_query(query: str):
+    """Ensures query is valid before sending to PubMed."""
+    if not query.strip():
+        raise ValueError("❌ Query cannot be empty.")
+    if not re.search(r"[a-zA-Z]", query):
+        raise ValueError("❌ Query must contain at least one letter.")
+    return query
+
 
 def fetch_pubmed_papers(query: str, max_results: int = 100) -> List[Dict]:
-    """Fetches PubMed papers using Entrez API"""
+    """Fetches PubMed papers using Entrez API with error handling."""
     try:
         handle = Entrez.esearch(db="pubmed", term=query, retmax=max_results)
         record = Entrez.read(handle)
         handle.close()
 
-        if not record["IdList"]:
+        if not record.get("IdList"):
             print("⚠️ No papers found for this query.")
             return []
 
@@ -35,22 +40,22 @@ def fetch_pubmed_papers(query: str, max_results: int = 100) -> List[Dict]:
         handle.close()
 
         return papers
+
+    except requests.exceptions.RequestException as e:
+        print(f"❌ Network error: {e}. Retrying in 5 seconds...")
+        time.sleep(5)
+        return fetch_pubmed_papers(query, max_results)  # Retry once
+
     except Exception as e:
         print(f"❌ Error accessing PubMed: {e}")
         return []
 
-def is_industry_affiliation(affiliation: str) -> bool:
-    """Checks if an affiliation is industry-related."""
-    if not affiliation:
-        return False
-    affil_lower = affiliation.lower()
-    
-    # Exclude academic institutions
-    if any(kw in affil_lower for kw in ACADEMIC_KEYWORDS):
-        return False
+def is_industry_affiliation(affil: str) -> bool:
+    """Checks if the given affiliation belongs to an industry."""
+    affil_lower = affil.lower()
+    return not any(kw in affil_lower for kw in ACADEMIC_KEYWORDS)
 
-    # Match industry-related terms
-    return any(kw in affil_lower for kw in INDUSTRY_KEYWORDS)
+
 
 def extract_email(affiliations: List[str]) -> str:
     """Extracts an email address from affiliations using regex."""
@@ -95,8 +100,11 @@ def process_papers(papers: List[Dict], debug: bool = False) -> List[Dict]:
 
     return results
 
+
+
+
 def save_to_csv(results: List[Dict], filename: str):
-    """Saves results to a CSV file."""
+    """Saves results to a CSV file with error handling."""
     if not results:
         print("⚠️ No papers with industry affiliations found.")
         return
@@ -109,29 +117,8 @@ def save_to_csv(results: List[Dict], filename: str):
             writer.writeheader()
             writer.writerows(results)
         print(f"✅ Results saved to: {output_path}")
+
+    except PermissionError:
+        print(f"❌ Permission denied: Cannot write to {output_path}. Try a different location.")
     except Exception as e:
         print(f"❌ Error saving file: {e}")
-
-def main():
-    """Main function to run the program from CLI."""
-    parser = argparse.ArgumentParser(description="Fetch and filter PubMed papers based on industry affiliations.")
-    parser.add_argument("--query", type=str, required=True, help="Search query for PubMed.")
-    parser.add_argument("--file", type=str, default="results.csv", help="Output CSV file name.")
-    parser.add_argument("--debug", action="store_true", help="Enable debug mode.")
-
-    args = parser.parse_args()
-
-    print(f"🔎 Searching PubMed for: {args.query}")
-    papers = fetch_pubmed_papers(args.query)
-    results = process_papers(papers, args.debug)
-
-    if args.debug:
-        print("\n🔍 DEBUG MODE: Printing Extracted Results\n")
-        import json
-        print(json.dumps(results, indent=2))
-
-    save_to_csv(results, args.file)
-
-if __name__ == "__main__":
-    main()
-

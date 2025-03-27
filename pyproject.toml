@@ -1,10 +1,11 @@
 [project]
 name = "pubmed-paper-fetcher"
 version = "0.1.0"
-description = ""
+description = "Fetches and filters PubMed research papers"
 authors = [
-    {name = "Your Name",email = "you@example.com"}
+    {name = "Pravallika",email = "slpravallika7@gmail.com"}
 ]
+license="MIT"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
@@ -13,8 +14,14 @@ dependencies = [
     "typer[all] (>=0.15.2,<0.16.0)",
     "python-dotenv (>=1.0.1,<2.0.0)",
     "beautifulsoup4 (>=4.13.3,<5.0.0)",
-    "biopython (>=1.85,<2.0)"
+    "biopython (>=1.85,<2.0)",
+    "argparse (>=1.4.0,<2.0.0)",
+    "pymupdf (>=1.25.4,<2.0.0)"
 ]
+
+[tool.poetry.scripts]
+get-papers-list = "pubmed_paper_fetcher.cli:main"
+
 
 [tool.poetry]
 packages = [{include = "pubmed_paper_fetcher", from = "src"}]
