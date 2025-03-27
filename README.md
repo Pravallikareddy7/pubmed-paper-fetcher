@@ -98,4 +98,5 @@ This project is licensed under the **MIT License**.
 
 ## Contact
 For any issues or feature requests, please open an issue in the repository.
-E-mail:slpravallika7@gmail.com
+## E-mail:
+slpravallika7@gmail.com
